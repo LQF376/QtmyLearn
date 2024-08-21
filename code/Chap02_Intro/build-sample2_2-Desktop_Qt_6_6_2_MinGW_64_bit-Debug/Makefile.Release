@@ -19,7 +19,7 @@ CXXFLAGS      = -fno-keep-inline-dllexport -O2 -std=gnu++1z -Wall -Wextra -Wextr
 INCPATH       = -I../sample2_2 -I. -ID:/Qt/qt_install/6.6.2/mingw_64/include -ID:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets -ID:/Qt/qt_install/6.6.2/mingw_64/include/QtGui -ID:/Qt/qt_install/6.6.2/mingw_64/include/QtCore -Irelease -I. -I/include -ID:/Qt/qt_install/6.6.2/mingw_64/mkspecs/win32-g++ 
 LINKER      =        g++
 LFLAGS        =        -Wl,-s -Wl,-subsystem,windows -mthreads
-LIBS        =        D:\Qt\qt_install\6.6.2\mingw_64\lib\libQt6Widgets.a D:\Qt\qt_install\6.6.2\mingw_64\lib\libQt6Gui.a D:\Qt\qt_install\6.6.2\mingw_64\lib\libQt6Core.a -lmingw32 D:\Qt\qt_install\6.6.2\mingw_64\lib\libQt6EntryPoint.a -lshell32  
+LIBS        =        D:\Qt\qt_install\6.6.2\mingw_64\lib\libQt6Widgets.a D:\Qt\qt_install\6.6.2\mingw_64\lib\libQt6Gui.a D:\Qt\qt_install\6.6.2\mingw_64\lib\libQt6Core.a release\sample2_2_resource_res.o -lmingw32 D:\Qt\qt_install\6.6.2\mingw_64\lib\libQt6EntryPoint.a -lshell32  
 QMAKE         = D:\Qt\qt_install\6.6.2\mingw_64\bin\qmake.exe
 DEL_FILE      = del
 CHK_DIR_EXISTS= if not exist
@@ -40,7 +40,7 @@ IDC           = idc
 IDL           = midl
 ZIP           = zip -r -9
 DEF_FILE      = 
-RES_FILE      = 
+RES_FILE      = release\sample2_2_resource_res.o
 SED           = $(QMAKE) -install sed
 MOVE          = move
 
@@ -70,8 +70,11 @@ DESTDIR_TARGET = release\sample2_2.exe
 first: all
 all: Makefile.Release  release/sample2_2.exe
 
-release/sample2_2.exe: D:/Qt/qt_install/6.6.2/mingw_64/lib/libQt6Widgets.a D:/Qt/qt_install/6.6.2/mingw_64/lib/libQt6Gui.a D:/Qt/qt_install/6.6.2/mingw_64/lib/libQt6Core.a D:/Qt/qt_install/6.6.2/mingw_64/lib/libQt6EntryPoint.a ui_dialog.h $(OBJECTS) 
+release/sample2_2.exe: D:/Qt/qt_install/6.6.2/mingw_64/lib/libQt6Widgets.a D:/Qt/qt_install/6.6.2/mingw_64/lib/libQt6Gui.a D:/Qt/qt_install/6.6.2/mingw_64/lib/libQt6Core.a D:/Qt/qt_install/6.6.2/mingw_64/lib/libQt6EntryPoint.a ui_dialog.h $(OBJECTS) release/sample2_2_resource_res.o
 	$(LINKER) $(LFLAGS) -o $(DESTDIR_TARGET) $(OBJECTS) $(LIBS)
+
+release/sample2_2_resource_res.o: sample2_2_resource.rc
+	windres -i sample2_2_resource.rc -o release\sample2_2_resource_res.o --include-dir=. $(DEFINES)
 
 qmake: FORCE
 	@$(QMAKE) -o Makefile.Release ..\sample2_2\sample2_2.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"
@@ -83,6 +86,7 @@ dist:
 
 clean: compiler_clean 
 	-$(DEL_FILE) release\main.o release\dialog.o release\qrc_res.o release\moc_dialog.o
+	-$(DEL_FILE) release\sample2_2_resource_res.o
 
 distclean: clean 
 	-$(DEL_FILE) .qmake.stash
@@ -664,7 +668,61 @@ release/dialog.o: ../sample2_2/dialog.cpp ../sample2_2/dialog.h \
 		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/QSizeF \
 		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/QTransform \
 		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qnativeinterface.h \
-		ui_dialog.h
+		ui_dialog.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/QVariant \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/QIcon \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QApplication \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qapplication.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qcoreapplication.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qeventloop.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qcoreapplication_platform.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qfuture.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qfutureinterface.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qmutex.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qdeadlinetimer.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qelapsedtimer.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qtsan_impl.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qresultstore.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qfuture_impl.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qthreadpool.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qthread.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qrunnable.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qexception.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qpromise.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qguiapplication.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qinputmethod.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtCore/qlocale.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qguiapplication_platform.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QCheckBox \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qcheckbox.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qabstractbutton.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QHBoxLayout \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qboxlayout.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qlayout.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qlayoutitem.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qgridlayout.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QPlainTextEdit \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qplaintextedit.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qtextedit.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qframe.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qtextdocument.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qtextoption.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qtextcursor.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qtextformat.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qpen.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qabstracttextdocumentlayout.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qtextlayout.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qglyphrun.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qrawfont.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtGui/qfontdatabase.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QPushButton \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qpushbutton.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QRadioButton \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/qradiobutton.h \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QSpacerItem \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QVBoxLayout \
+		D:/Qt/qt_install/6.6.2/mingw_64/include/QtWidgets/QWidget
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\dialog.o ..\sample2_2\dialog.cpp
 
 release/qrc_res.o: release/qrc_res.cpp 

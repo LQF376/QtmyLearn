@@ -17,6 +17,17 @@ public:
     Dialog(QWidget *parent = nullptr);
     ~Dialog();
 
+private slots:
+    void do_setFontColor();
+
+    void on_checkBoxUnder_clicked(bool checked);
+
+    void on_checkBoxItalic_clicked(bool checked);
+
+    void on_checkBoxBold_clicked(bool checked);
+
+    void on_btnClear_clicked(bool checked);
+
 private:
     Ui::Dialog *ui;
 };

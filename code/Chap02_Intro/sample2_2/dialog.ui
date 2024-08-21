@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>信号与槽的使用</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>90</x>
@@ -51,7 +51,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QRadioButton" name="radioButton">
+       <widget class="QRadioButton" name="radioBlack">
         <property name="text">
          <string>Black</string>
         </property>
@@ -61,14 +61,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="radioButton_2">
+       <widget class="QRadioButton" name="radioRed">
         <property name="text">
          <string>Red</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="radioButton_3">
+       <widget class="QRadioButton" name="radioBlue">
         <property name="text">
          <string>Blue</string>
         </property>

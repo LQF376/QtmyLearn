@@ -182,9 +182,15 @@ SIGNAL和SLOT是Qt宏定义，分别用于指明信号和槽函数，并将他�
 
 ![image-20240820000415145](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240820000415145.png)
 
+信号与槽编译器设定的关联，由经预处理的 ui 文件中界面的 `setupUi()` 中实现关联
+
+![image-20240821220148403](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240821220148403.png)
+
 ### 为组件的信号生成槽函数原型和框架
 
 - 不用手动关联，在窗口类的构造函数里面调用的 setupUi() 函数里自动完成关联
+
+![image-20240821220907608](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240821220907608.png)
 
 在界面类private slots 部分会自动增加槽函数声明，函数名是根据发射信号的对象名和信号名称自动命名
 
@@ -192,7 +198,7 @@ SIGNAL和SLOT是Qt宏定义，分别用于指明信号和槽函数，并将他�
 void on_<object name>_<signal name>(<signal parameters>);		// 自动生成的槽函数
 ```
 
-
+![image-20240821221046705](C:/Users/89375/AppData/Roaming/Typora/typora-user-images/image-20240821221046705.png)
 
 组件信号和槽函数的关联在 .ui 界面文件编译后的 ui_xx.h 文件内，`QMetaObject::connectSlotsByName()` 就是搜索界面上的所有组件，将名称匹配的信号和槽函数关联起来
 
@@ -201,6 +207,10 @@ void on_<object name>_<signal name>(<signal parameters>);		// 自动生成的槽
 如果多个信号关联同一个槽函数，上述两种方法存在一定局限，建议使用自定义槽函数，进行手动关联
 
 自定义槽函数应自觉遵守命名规范，以 `do_`为前缀
+
+![image-20240821222748721](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240821222748721.png)
+
+![image-20240821224126546](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240821224126546.png)
 
 ## 为应用设置图标
 
@@ -212,4 +222,26 @@ void on_<object name>_<signal name>(<signal parameters>);		// 自动生成的槽
   RC_ICONS = editor.ico
   ```
 
-  
+
+## Qt 项目构建基本原理
+
+![image-20240821232315833](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240821232315833.png)
+
+### 元对象系统和MOC
+
+Qt 对 C++ 语言进行了扩展，引入了元对象系统，所有从 QObect 继承的类都可以利用元对象系统提供的功能，元对象系统支持属性、信号与槽，动态类型转换等特性
+
+Qt 提供元对象编译器（MOC），构建项目时，头文件会先被MOC预编译，形成标准C++语言的程序文件
+
+### UI 文件和 UIC
+
+可视化设计的窗口 UI 文件会被**用户界面编译器（UIC）**转换为一个C++源程序文件；生成的源文件与UI文件在同一个文件夹里
+
+### 资源文件和 RCC
+
+Qt 项目中的资源文件（.qrc 文件）会被资源编译器（RCC）转换为C++程序文件，例如 res.qrc 资源文件会编译生成 qrc_res.cpp 文件
+
+----
+
+最后经标注C++编译器（即开发套件中的编译器）进行统一编译和连接，生成可执行程序
+
