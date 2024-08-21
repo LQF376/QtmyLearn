@@ -1,10 +1,18 @@
+# Qt 安装
+
+![image-20240820231423515](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240820231423515.png)
+
+![image-20240820232717245](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240820232717245.png)
+
+![image-20240820233710434](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240820233710434.png)
+
 # Qt Creator 简介
 
 对 Qt Creator 进行一些设置
 
-![屏幕截图 2024-08-18 180225](https://raw.githubusercontent.com/LQF376/image/main/img/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202024-08-18%20180225.png)
+<img src="https://raw.githubusercontent.com/LQF376/image/main/img/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202024-08-18%20180225.png" alt="屏幕截图 2024-08-18 180225" style="zoom:50%;" />
 
-![屏幕截图 2024-08-18 180830](https://raw.githubusercontent.com/LQF376/image/main/img/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202024-08-18%20180830.png)
+<img src="https://raw.githubusercontent.com/LQF376/image/main/img/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202024-08-18%20180830.png" alt="屏幕截图 2024-08-18 180830" style="zoom: 50%;" />
 
 ## 新建一个GUI项目
 
@@ -176,3 +184,32 @@ SIGNAL和SLOT是Qt宏定义，分别用于指明信号和槽函数，并将他�
 
 ### 为组件的信号生成槽函数原型和框架
 
+- 不用手动关联，在窗口类的构造函数里面调用的 setupUi() 函数里自动完成关联
+
+在界面类private slots 部分会自动增加槽函数声明，函数名是根据发射信号的对象名和信号名称自动命名
+
+```cpp
+void on_<object name>_<signal name>(<signal parameters>);		// 自动生成的槽函数
+```
+
+
+
+组件信号和槽函数的关联在 .ui 界面文件编译后的 ui_xx.h 文件内，`QMetaObject::connectSlotsByName()` 就是搜索界面上的所有组件，将名称匹配的信号和槽函数关联起来
+
+### 使用自定义槽函数
+
+如果多个信号关联同一个槽函数，上述两种方法存在一定局限，建议使用自定义槽函数，进行手动关联
+
+自定义槽函数应自觉遵守命名规范，以 `do_`为前缀
+
+## 为应用设置图标
+
+- 将一个后缀为 `.ico` 的图标文件复制到项目根目录下
+
+- 在项目配置文件 `.pro` 里用 RC_ICONS 设置图标文件名，并重新构建项目
+
+  ```cpp
+  RC_ICONS = editor.ico
+  ```
+
+  
