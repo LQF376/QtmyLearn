@@ -243,5 +243,471 @@ Qt 项目中的资源文件（.qrc 文件）会被资源编译器（RCC）转换
 
 ----
 
-最后经标注C++编译器（即开发套件中的编译器）进行统一编译和连接，生成可执行程序
+最后经标准C++编译器（即开发套件中的编译器）进行统一编译和连接，生成可执行程序
+
+## 代码化UI设计（纯代码）
+
+用纯代码的方式设计 UI、
+
+- 创建项目时，选择不自动生成 .ui 文件
+
+![image-20240826224602873](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240826224602873.png)
+
+![image-20240826234510540](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240826234510540.png)
+
+![image-20240826235918177](https://raw.githubusercontent.com/LQF376/image/main/img/image-20240826235918177.png)
+
+# Qt框架概述
+
+## Qt6 框架的模块
+
+- Qt Essentials：基础模块，提供了 Qt 在所有平台上的基本功能，安装时是自动安装的，无需选择
+- Qt Addons：附加模块，安装时可以选择性安装
+
+-----
+
+基础模块中 Qt Core 是 Qt 框架的核心，其他模块都要依赖此模块，在使用 qmake项目配置时，会自动添加
+
+```
+Qt += core gui
+```
+
+## Qt 全局定义
+
+`<QtGlobal>` 定义了 Qt 框架中一些全局定义，包括基本数据类型、函数和宏
+
+### 基本数据类型
+
+| Qt 类型    | POSIX 定义             | 字节数 |
+| ---------- | ---------------------- | ------ |
+| qint8      | signed char            | 1      |
+| qint16     | signed short           | 2      |
+| qint32     | signed int             | 4      |
+| qint64     | long long int          | 8      |
+| qlonglong  | long long int          | 8      |
+| quint8     | unsigned char          | 1      |
+| quint16    | unsigned short         | 2      |
+| quint32    | unsigned int           | 4      |
+| quint64    | unsigned long long int | 8      |
+| qulonglong | unsigned long long int | 8      |
+| uchar      | unsigned char          | 1      |
+| ushort     | unsigned short         | 2      |
+| uint       | unsigned int           | 4      |
+| ulong      | unsigned long          | 8      |
+| qreal      | double                 | 8      |
+| qsizetype  | ssize_t                | 8      |
+| qfloat16   | ---                    | 2      |
+
+`qfloat16` 用于表示16位的浮点数，定义在头文件 `<QFloat16>` 中
+
+### 函数
+
+| 函数原型                                                     | 功能                               |
+| ------------------------------------------------------------ | ---------------------------------- |
+| T **qAbs**(const T& value)                                   |                                    |
+| const T& **qBound**(const T& min, const T& value, const T&max) | 返回value限定在 min~max 之间       |
+| T **qExchange**(T& obj, U&& newValue)                        | obj的值用newValue替换，返回obj旧值 |
+| int **qFpClassify**(double val)                              | 返回val分类（正数、零）            |
+| bool **qFuzzyCompare**(double p1, double p2)                 | p1 p2 近似相等，返回 true          |
+| bool **qFuzzyIsNull**(double d)                              | d 约等于0，返回 true               |
+| double **qInf**()                                            | 返回无穷大的数                     |
+| bool **qIsFinite**(double d)                                 | d 是一个有限的数，返回 true        |
+| bool **qIsInf**(double d)                                    | d 为无穷大的数，返回 true          |
+| bool **qIsNaN**(double d)                                    | d 为非数，返回 true                |
+| const T& **qMax**(const T& value1, const T& value2)          | 返回 value1, value2 之间的最大值   |
+| const T& **qMin**(const T& value1, const T& value2)          | 返回 value1, value2 之间的最小值   |
+| qint64 **qRound64**(double value)                            | value 近似为最接近的 qint64 整数   |
+| int **qRound**(double value)                                 | value 近似为最接近的 int 整数      |
+
+### 宏定义
+
+| 宏定义                                | 含义                                   |
+| ------------------------------------- | -------------------------------------- |
+| **QT_VERSION**                        | Qt 版本，数值格式为 0xMMNNPP           |
+| **Q_BYTE_ORDER**                      | 系统内存中数据的字节序                 |
+| Q_BIG_ENDIAN                          | 大端字节序                             |
+| Q_LITTLE_ENDIAN                       | 小端字节序                             |
+| **Q_DECL_IMPORT** / **Q_DECL_EXPORT** | 导入/导出共享库内容                    |
+| **Q_UNUSED(name)**                    | 声明函数中未被使用的参数，防止编译警告 |
+| **foreach(variable, container)**      | 遍历容器的内容                         |
+| **qDebug(const char* message, ...)**  | debug 信息输出，可格式化输出           |
+
+判断主机内存字节序
+
+```cpp
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+...
+#endif
+```
+
+## 元对象系统
+
+- **QObject 类**是所有使用元对象系统的类的基类
+- 必须在一个类的开头部分插入宏 `Q_OBJECT`，这样类才可以使用元对象系统的特性
+- MOC 为每个 QObject 的子类提供必要的代码来实现元对象系统的特征
+
+构建项目时，MOC 发现类的定义里有 Q_OBJECT 宏时，就会为该类生成另一个包含元对象支持的 C++源文件，这个文件最后连通类的实现文件一起被标准C++编译器编译和连接
+
+-----
+
+**Object 类与元对象系统的相关函数：**
+
+| 函数                                         | 功能                                 |
+| -------------------------------------------- | ------------------------------------ |
+| **元对象：**                                 |                                      |
+| QMetaObject* **metaObject**()                | 返回这个对象的元对象                 |
+| QMetaObject* **staticMetaObject**            | 类的静态变量，存储了类的元对象       |
+| **类型信息：**                               |                                      |
+| bool **inherits**()                          | 判断这个对象是不是某个类的子类的实例 |
+| **动态翻译：**                               |                                      |
+| QString **tr**()                             | 返回一个字符串的翻译版本             |
+| **对象树：**                                 |                                      |
+| QObjectList& **children**()                  | 返回子对象列表                       |
+| QObject* **parent**()                        | 返回父对象指针                       |
+| void **setParent**()                         | 设置父对象                           |
+| T **findChlid**()                            | 按照对象名称，查找可被转为T的子对象  |
+| QList<T> **findChildren**()                  | 返回符合名称和类型条件的子对象列表   |
+| **信号与槽：**                               |                                      |
+| QMetaObject::Connection **connect**()        | 设置信号与槽关联                     |
+| bool **disconnect**()                        | 解除信号与槽的关联                   |
+| bool **blockSignals**()                      | 设置是否阻止对象发射任何信号         |
+| bool **signalsBlocked**()                    | 返回 true，表示对象被阻止发射信号    |
+| **属性系统：**                               |                                      |
+| QList<QByteArray> **dynamicPropertyNames**() | 返回所有动态属性名称                 |
+| bool **setProperty**()                       | 设定属性值，或添加动态属性           |
+| QVariant **property**()                      | 返回属性值                           |
+
+获取元对象：每个Object及其子类的实例都有一个元对象
+
+````cpp
+QPushButton* btn = new QPushButton();
+const QMetaObject* metaPtr = btn->metaObject();			// 1
+const QMetaObject metaObj = btn->staticMetaObject;		// 2
+````
+
+----
+
+元对象（QMetaObject）存储了类的实例所属类的各种元数据（类的描述信息）
+
+类的元数据又分为多种类型，且又有专门的类来描述：（例如 QMetaProperty 用来描述属性的元数据）
+
+**QMetaObject 类的主要接口：**
+
+| 函数原型                                         | 功能                                                         |
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| **类的信息：**                                   |                                                              |
+| char* **className**()                            | 返回这个类的名称                                             |
+| QMetaType **metaType**()                         | 返回这个元对象的元类型                                       |
+| QMetaObject* **superClass**()                    | 返回这个类的上层父类的元对象                                 |
+| bool **inherits**(QMetaObject* metaObject)       | true：这个类继承与 metaObject 描述的类，否则 false           |
+| QObject* **newInstance**(...)                    | 创建这个类的实例，最多向构造传10个参数                       |
+| **类信息元数据：**                               |                                                              |
+| QMetaClassInfo **classInfo**(int index)          | 返回序号为index的类信息的元数据，类信息在类中用 Q_CLASSINFO 定义 |
+| int **indexOfClassInfo**(char* name)             | 返回名称为name的类信息的序号，序号可用于 classInfo()         |
+| int **classInfoCount**()                         | 返回这个类的类信息条数                                       |
+| int **classInfoOffset**()                        | 返回这个类的第一条类信息序号                                 |
+| **构造函数元数据：**                             |                                                              |
+| int **constructorCount**()                       | 返回这个类的构造函数个数                                     |
+| QMetaMethod **constructor**(int index)           | 返回序号为index的构造函数的元数据                            |
+| int **indexOfConstructor**(char* constructor)    | 返回构造函数的序号，constructor 为正则化后的函数名和参数名   |
+| **方法元数据：**                                 |                                                              |
+| QMetaMethod **method**(int index)                | 返回序号为 index 方法的元数据                                |
+| int **methodCount**()                            | 返回这个类的方法的个数（成员函数、信号、槽）                 |
+| int **methodOffset**()                           | 返回这个类的第一个方法的序号                                 |
+| int **indexOfMethod**(char* method)              | 返回名称为 method 的方法的序号                               |
+| **枚举类型元数据：**                             |                                                              |
+| QMetaMethod **method**(int index)                | 返回序号为 index 的枚举类型的元数据                          |
+| int **enumeratorCount**()                        | 返回这个类的枚举类型个数                                     |
+| int **enumeratorOffset**()                       | 返回这个类的第一个枚举类型的序号                             |
+| int **indexOfEnumerator**(char* name)            | 返回名称为 name 的枚举类型的序号                             |
+| **属性元数据：**                                 |                                                              |
+| QMetaProperty **property**(int index)            | 返回序号为 index 的属性的元数据                              |
+| int **propetyCount**()                           | 返回这个类的属性的个数                                       |
+| int **propetyOffset**()                          | 返回这个类的第一个属性的序号                                 |
+| int **indexOfProperty**(char* name)              | 返回名称为 name 的属性的序号                                 |
+| **信号与槽：**                                   |                                                              |
+| int **indexOfSignal**(char* signal)              | 返回名称为 signal 的信号的序号                               |
+| int **indexOfSlot**(char* slot)                  | 返回名称为 slot 的槽函数序号                                 |
+| **静态函数：**                                   |                                                              |
+| bool **checkConnectArgs**(...)                   | 检查信号与槽函数的参数是否兼容                               |
+| void **connectSlotsByName**(QObject* object)     | 迭代搜索 object 的所有子对象，将匹配的信号与槽相连接         |
+| bool **invokeMethod**(...)                       | 运行 QObject 对象的某个方法                                  |
+| QByteArray **normalizedSignature**(char* method) | 将方法 method 名称和参数字符串正则化，去除多余空格           |
+
+-----
+
+## 运行时类型信息
+
+利用 QObject 和 QMetaObject 提供的接口，可以在运行时获得一个对象的类名称以及其父类的名称，判断其是否从某个类继承而来，并不需要适用 C++ 编译器的运行时类型信息（RTTI）
+
+- 返回类名称
+
+```cpp
+QPushButton *btn = new QPushButton();
+const QMetaObject *meta = btn->metaObject();
+QString str = QString(meta->className());			// str = QPushButton
+```
+
+- 判断一个对象是不是继承自某个类的实例
+
+````cpp
+QPushButton *btn = new QPushButton();
+bool result = btn->inherits("QPushButton");		// true
+result = btn->inherits("QObject");				// true
+result = btn->inherits("QCheckBox");			// faluse
+````
+
+- 获取父类的元对象信息
+
+```cpp
+QPushButton *btn = new QPushButton();
+const QMetaObject *meta = btn->metaObject();
+QString str1 = QString(meta->className());			// str1 = QPushButton
+
+const QMetaObject *metaSuper = btn->metaObject()->superClass();
+QString str2 = QString(metaSuper->className());		// str = QAbstractButton
+```
+
+- 动态类型转换（基类指针转派生类）
+
+```cpp
+QObject *btn = new QPushButton();
+const QMetaObject *meta = btn->metaObject();
+QString str1 = QString(meta->className());			// QPushButton
+
+QPushButton *btnPush = qobject_cast<QPushButton*>(btn);
+const QMetaObject *meta2 = btnPush->metaObject();
+QString str1 = QString(meta2->className());			// QPushButton
+
+QCheckBox* chkBox = qobject_cast<QCheckBox*>(btn);		// 转换失败返回 nullptr
+```
+
+## 属性系统
+
+属性是基于元对象系统实现的，在 QObject 的子类中，可使用 Q_PROPERTY 定义属性，其格式：
+
+```
+Q_PROPERTY(type name
+		(READ getFunction [WRITE setFunction] | 
+		MEMBER memberName [(READ getFunction | WRITE setFunction)])
+		[RESET resetFunction]
+		[NOTIFY notifySignal]
+		[REVISION int | REVISION(int[, int])]
+		[DESIGNABLE bool]
+		[SCRIPTABLE bool]
+		[STORED bool]
+		[USER bool]
+		[BINDABLE bindableProperty]
+		[CONSTANT]
+		[FINAL]
+		[REQUIRED] )
+```
+
+- READ：指定一个读取属性值的函数，没有 MEMBER 关键字时必须设定
+- WRITE：指定一个设置属性值的函数
+- MEMBER：指定一个成员变量与属性关联，使之成为可读可写的属性，之后无需再指定 READ 和 WRITE
+- RESET：设置属性默认值的函数
+- NOTIFY：设置一个信号，当属性值发生变化时就发射此信号
+- DESIGNABLE：是否在 Qt Design 属性编辑器里可见，默认为 true
+- USER：表示这个属性是不是用户可编辑的属性，默认值为 false
+- CONSTANT：表示属性值是一个常数
+- FINAL：所定义的属性不能被子类重载
+
+### 属性的设置和读取
+
+可读可写属性一般有
+
+- 一个用于读取属性值的函数，函数名与属性名相同
+- 一个用于设置属性值的函数，函数名一般是在属性名前加前缀 set
+
+```
+QString QLable::text();						// 读取
+void QLable::setText(const QString& )		// 设置
+```
+
+通过 `QObject::property()` 和 `QObject::setProperty()` 
+
+```
+bool flag = ui->btn->property("flat").toBool();		// 读取
+ui->btn->setProperty("flat", !flag);				// 设置
+```
+
+元对象所描述类的属性元数据
+
+```cpp
+const QMetaObject* meta = ui->spinBox->metaObject();		// 获取 spinBox 的元对象
+int index = meta->indexOfProperty("value");					// 获取属性 value 的序号
+QMetaProperty prop = meta->property(index);					// 获取属性 value 的元数据
+bool res = prop.isWritable();								// 属性是否可写
+res = prop.isDesignable();									// 属性是否可设计
+res = prop.hasNotifySignal();								// 属性是否有反映属性变化的信号
+```
+
+### 动态属性
+
+`QObject::setProperty()` 设置属性值时，如果属性名称不存在，就会为对象定义一个新属性并设置属性值，称为**动态属性**
+
+动态属性是针对类的实例定义，只能使用 `QObject::property()` 方式读取
+
+## 附加的类信息
+
+元对象系统支持使用 `Q_CLASSINFO()`在类中定义一些类信息，类信息由名称和值组成，值只能用字符串表示
+
+```
+class QMyClass: public QObject{
+	QOBJECT;
+	Q_CLASSINFO("author", "wang");
+	Q_CLASSINFO("company", "WPS");
+	Q_CLASSINFO("version", "3.0.1");
+};
+
+// 返回名称和值
+char* QMetaClassInfo::name();
+char* QMetaClassInfo::value();
+```
+
+## 信号与槽
+
+### connect() 使用
+
+`connect()` 关联信号与槽，其有**一种成员函数**、**多种静态函数**版本
+
+```cpp
+connect(sender, SIGNAL(signal(int)), receiver, SLOT(slot(int)));	// 带参数需要注明参数类型
+```
+
+----
+
+另一种版本在同名信号（参不同时）会引发歧义，需要使用 `qOverload<>()` 指明参数类型
+
+- 对于 overload 型信号，只要槽函数不是 overload 型，就可以使用传递参数指针的 connect() 来进行信号与槽的关联，Qt 会根据槽函数的参数自动确定使用哪个信号
+
+```cpp
+void QCheckBox::clicked( );							// 信号
+void QCheckBox::clicked(bool checked = false);
+
+void do_checked(bool checked);
+void do_checked();
+// 传递函数指针类型，需要用 qOverload<> 指定参数类型
+connect(ui->checkBox, &QCheckBox::clicked, this, &Widget::do_click);	// 产生歧义
+connect(ui->checkBox, &QCheckBox::clicked, this, qOverload<bool>(&Widget::do_click);
+connect(ui->checkBox, &QCheckBox::clicked, this, qOverload<>(&Widget::do_click);
+```
+
+---
+
+QObject 成员函数版本`connect()`：没有接收者参数，因为接收者就是本身
+
+```cpp
+QMetaObject::Connection QObject::connect(const QObject* sender, const char* signal, 
+			const char* method, Qt::ConnectionType type = Qt::AutoConnection)
+```
+
+---
+
+不管那种 `connect()` 函数，最后都有一个 `Qt::ConnectionType` 参数，指定信号与槽的关联方式
+
+- **`Qt::AutoConnection`**（默认值）：信号的接收者和发射者在同一个线程中，就使用 `Qt::DirectConnection` 方式，否则，使用 `Qt::QueuedConnection` 方式
+- **`Qt::DirectConnection`** ：信号被发射时槽函数立即执行，发射者和接收者在同一个线程中
+- **`Qt::QueuedConnection`** ：在事件循环回到接收者线程后运行槽函数，发射者和接收者不再同一个线程中
+- **`Qt::BlockingQueuedConnection`**：同 `Qt::QueuedConnection`，但信号线程会阻塞，直到槽函数运行完毕；如果发射者和接收者在同一个线程中，此方式会导致死锁
+
+### disconnect()
+
+解除信号与槽的连接
+
+常用的使用方法如下：
+
+- 解除与一个发射者的所有信号的连接
+
+```cpp
+disconnect(myObject, nullptr, nullptr, nullptr);			// 静态函数形式
+myObject->disconnect();										// 成员函数形式
+```
+
+- 解除与一个特定信号的所有连接
+
+```cpp
+disconnect(myObject, SIGNAL(mySignal()), nullptr, nullptr);			// 静态函数形式
+myObject->disconnect(SIGNAL(mySignal()));							// 成员函数形式
+```
+
+- 解除与一个特定接收者的所有连接
+
+```cpp
+disconnect(myObject, nullptr, myReceiver, nullptr);
+myObject->disconnect(myReceiver);
+```
+
+- 解除特定的一个信号与槽的连接
+
+```cpp
+disconnect(lineEdit, &QLineEdit::textChanged, label, &QLabel::setText);		// 静态函数形式
+```
+
+----
+
+### sender() 
+
+槽函数里可以调用 sender() 获取信号发射者的 Object 对象指针，如果提前知道信号发射者类型，可进行类型转换
+
+```cpp
+QPushButton *btn = qobject_cast<QPushButton*>(sender());		// 获取信号的发射者
+```
+
+### 自定义信号及其使用
+
+信号函数必须是无返回值的函数，但是可以有输入参数；信号函数无需实现，只在特定条件下发射
+
+```cpp
+class TPerson: public QObject{
+	Q_BJECT
+private:
+    int m_age = 10;
+public:
+    void incAge();
+signal:
+	void ageChanged(int value);			// 自定义信号，无需实现
+}
+
+void TPerson::incAge(){
+    m_age++;
+    emit ageChanged(m_age);				// 发射信号
+}
+```
+
+## 对象数
+
+QObect 对象以对象树的形式来组织，创建时可设定对象的父对象，即添加到父对象的子对象列表中
+
+一个父对象被删除时，其全部子对象就会被自动删除
+
+QObect 类有一些函数可在运行时访问对象树中的对象
+
+### children()
+
+返回对象的子对象列表
+
+```cpp
+typedef QList<QObject*> QObjectList;
+
+const QObjectList &Object::children();
+```
+
+使用 children() 遍历布局里面的所有 PushButton 对象操作
+
+```cpp
+QObjectList objList = ui->groupBox_Btns->children();
+for(int i = 0; i < objList.size(); ++i){
+	const QMetaObject* meta = objList.at(i)->metaObject();		// 获取元对象
+	QString className = QString(meta->className());				// 子对象类名称
+	if(className == "QPushButton"){
+		QPushButton* btn = qobject_cast<QPushButton*>(objList.at(i));
+		QString str = btn->text();
+		btn->setText(str+"*");
+	}
+}
+```
+
+
 
